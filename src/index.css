@@ -793,6 +793,8 @@ ol {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* keep faces in frame when a portrait photo fills a round avatar */
+  object-position: 50% 18%;
 }
 
 .avatar-initials {

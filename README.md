@@ -37,7 +37,7 @@ npm run build    # production build in dist/
 
 ## Trainer photos
 
-Put the photos in `public/trainers/` with these names (square or portrait, about 800px wide):
+The photos are in `public/trainers/`. To replace one, keep the same file name (square for co-trainers, 4:5 portrait for the lead trainer):
 
 | Trainer | File |
 | --- | --- |
@@ -46,7 +46,7 @@ Put the photos in `public/trainers/` with these names (square or portrait, about
 | المدرب محمد فراني | `mohamed-ferrani.jpg` |
 | المدرب عبد القادر وابل | `abdelkader-ouabel.jpg` |
 
-Until a photo is there, its card shows the trainer's initials. The co-trainers' bios are in `CO_TRAINERS` in `src/data.js`.
+If a photo file is missing, its card shows the trainer's initials instead. The co-trainers' bios are in `CO_TRAINERS` in `src/data.js`.
 
 ## Registration form
 
