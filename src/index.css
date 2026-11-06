@@ -690,6 +690,35 @@ ol {
   color: #fff;
 }
 
+.offer-badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #e0362c;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+
+.price-pair {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.price-pair .old {
+  color: #9fb0cf;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-decoration-color: #ff6b5e;
+  text-decoration-thickness: 2px;
+}
+
+.announce s {
+  opacity: 0.75;
+}
+
 .event-price p {
   margin-top: 4px;
   color: #ffc58c;
@@ -1982,6 +2011,30 @@ ol {
   font-size: 0.95rem;
 }
 
+.ticket-old {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  color: var(--text-2);
+  font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.ticket-old s {
+  text-decoration-color: #e0362c;
+  text-decoration-thickness: 2px;
+}
+
+.save {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: #fde7e5;
+  color: #b42318;
+  font-size: 0.95rem;
+}
+
 .ticket-price {
   display: flex;
   align-items: baseline;
@@ -2750,6 +2803,11 @@ legend span {
 .mbar-price b {
   font-family: var(--font-display);
   font-size: 1.12rem;
+}
+
+.mbar-price s {
+  color: #9fb0cf;
+  text-decoration-color: #ff6b5e;
 }
 
 .mbar-price small {

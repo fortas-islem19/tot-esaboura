@@ -27,10 +27,22 @@ export const COURSE = {
   organizers: 'المعهد إنترناشيونال × السبورة',
 }
 
-export const PRICE = 90000
-// The card says a 50% deposit confirms the seat. 50% of 90,000 DA is 45,000 DA
-// (the card also prints "35,000 دج"; check which amount is right and set it here).
-export const DEPOSIT = 45000
+// Regular fee from the technical card
+export const FULL_PRICE = 90000
+
+// Launch offer: 57,000 DA instead of 90,000 DA for registrations until 22 November 2026.
+// After endsAt the page switches back to FULL_PRICE on its own.
+export const OFFER = {
+  price: 57000,
+  endsAt: '2026-11-22T23:59:59+01:00', // end of 22 November, Algeria time
+  label: 'إلى غاية 22 نوفمبر',
+}
+export const OFFER_ACTIVE = Date.now() < new Date(OFFER.endsAt).getTime()
+
+// Fee that applies right now
+export const PRICE = OFFER_ACTIVE ? OFFER.price : FULL_PRICE
+// A 50% deposit confirms the seat (28,500 DA during the offer, 45,000 DA after it)
+export const DEPOSIT = Math.round(PRICE / 2)
 
 // Seats already booked. Drives the "seats left" bar; update it as registrations come in.
 export const SEATS_TAKEN = 0
@@ -56,6 +68,8 @@ export const SITES = ['almaahed.com', 'esaboura.com']
 export const PAYMENT = {
   // Slick-Pay payment links (CIB / Edahabia), created in the Slick-Pay dashboard for THIS course.
   // The online option only shows for an amount whose link is filled in.
+  // During the offer the amounts are 28,500 DA (deposit) and 57,000 DA (full);
+  // after 22 November they become 45,000 DA and 90,000 DA, so the links need updating then.
   slickLinks: {
     deposit: '', // link for DEPOSIT
     full: '', // link for PRICE

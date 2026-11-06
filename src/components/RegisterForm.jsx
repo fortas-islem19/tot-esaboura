@@ -3,13 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { submitRegistration } from '../lib/submit'
 import { normalizePhone, validate } from '../lib/validate'
 import { WILAYAS } from '../lib/wilayas'
-import { COURSE, DEPOSIT, PAYMENT, PHONES, PRICE, VENUE, WHATSAPP, formatDA } from '../config'
+import { COURSE, DEPOSIT, FULL_PRICE, OFFER, OFFER_ACTIVE, PAYMENT, PHONES, PRICE, VENUE, WHATSAPP, formatDA } from '../config'
 import { Reveal } from './Motion'
 import { seatsLeft } from './Sections'
 
 const AMOUNTS = {
   deposit: { value: DEPOSIT, title: 'تسبيق 50% لتثبيت المقعد', label: `تسبيق 50% (${formatDA(DEPOSIT)})` },
-  full: { value: PRICE, title: 'كامل رسوم المشاركة', label: `كامل الرسوم (${formatDA(PRICE)})` },
+  full: { value: PRICE, title: OFFER_ACTIVE ? 'كامل الرسوم بسعر العرض الخاص' : 'كامل رسوم المشاركة', label: `كامل الرسوم (${formatDA(PRICE)})` },
 }
 const hasLink = (amount) => Boolean(PAYMENT.slickLinks?.[amount])
 const ONLINE_AVAILABLE = hasLink('deposit') || hasLink('full')
@@ -245,6 +245,11 @@ export default function RegisterForm() {
           <span className="kicker">التسجيل</span>
           <h2>احجز مقعدك في الدورة</h2>
           <p>
+            {OFFER_ACTIVE && (
+              <>
+                سعر خاص <b>{formatDA(PRICE)}</b> بدل {formatDA(FULL_PRICE)} {OFFER.label} فقط.{' '}
+              </>
+            )}
             املأ الاستمارة في دقيقتين، ثم ثبّت مقعدك بدفع التسبيق ({formatDA(DEPOSIT)}) أو كامل الرسوم ({formatDA(PRICE)}). المقاعد محدودة بـ {COURSE.seats} مشاركًا،
             والأولوية حسب ترتيب التسجيل.
           </p>
@@ -258,9 +263,15 @@ export default function RegisterForm() {
             <span>
               {VENUE.name}، {VENUE.city}
             </span>
-            <span>
-              بقي <b>{seatsLeft}</b> مقعدًا
-            </span>
+            {OFFER_ACTIVE ? (
+              <span>
+                <b>{formatDA(PRICE)}</b> {OFFER.label}
+              </span>
+            ) : (
+              <span>
+                بقي <b>{seatsLeft}</b> مقعدًا
+              </span>
+            )}
           </div>
 
           <AnimatePresence mode="wait">

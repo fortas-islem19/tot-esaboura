@@ -7,7 +7,7 @@ Built with React, Vite and Framer Motion, like the "الأستاذ الرقمي"
 ## Sections
 
 1. Announcement bar and sticky header with both logos
-2. Hero: title, lead trainer, PDF button, and an event card with a live countdown, key facts, price and deposit
+2. Hero: title, lead trainer, PDF button, and an event card with a live countdown (to the end of the offer, then to day one), key facts, price and deposit
 3. The course in numbers, plus a scrolling strip of models and tools
 4. Why this course (context)
 5. The 9 target competencies and their measurable outcomes
@@ -73,8 +73,14 @@ Same methods and accounts as the "الأستاذ الرقمي" page. The registr
 
 Paste the Pixel ID into `window.META_PIXEL_ID` in `index.html`. With an ID set, the page tracks `PageView`, and `Purchase` (the chosen amount in DZD, with the status as `content_category`) once FormBold accepts a registration. With no ID, nothing is loaded.
 
+## Price and offer
+
+The regular fee is 90,000 DA (`FULL_PRICE`). Until **22 November 2026** (`OFFER.endsAt`) the page shows a special price of **57,000 DA** (`OFFER.price`) instead of 90,000 DA: in the announcement bar, the hero card (whose countdown then counts down to the end of the offer), the price ticket, the FAQ, the form and the mobile bar. Each registration sent to FormBold also carries the price that applied (`السعر المطبّق`).
+
+When the offer ends, the page switches back to 90,000 DA by itself and the countdown counts down to the first day of the course. The 50% deposit follows the price: 28,500 DA during the offer, 45,000 DA after it. If Slick-Pay links are used, create them for these amounts and update them after 22 November.
+
 ## Updating
 
 - `SEATS_TAKEN` in `src/config.js` drives "seats left" across the page; update it as registrations come in.
-- `DEPOSIT` is set to 45,000 DA (50% of 90,000). The technical card also prints 35,000 DA, so check which one is right.
+- `OFFER` in `src/config.js`: change the price, end date or label of the offer.
 - `VENUE.mapsLink`: optional Google Maps link to the venue.

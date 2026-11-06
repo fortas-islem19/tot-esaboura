@@ -1,4 +1,4 @@
-import { COURSE, FORM_ENDPOINT } from '../config'
+import { COURSE, FORM_ENDPOINT, FULL_PRICE, OFFER, OFFER_ACTIVE, formatDA } from '../config'
 
 // Readable field names, so the emails FormBold sends are easy to read
 const LABELS = {
@@ -30,6 +30,9 @@ export async function submitRegistration(data) {
     payload[label] = typeof value === 'boolean' ? (value ? 'نعم' : 'لا') : value
   }
   payload['الدورة'] = `${COURSE.title} — دورة تدريب المدربين ToT (${COURSE.code}) — ${COURSE.dates}، ${COURSE.city}`
+  payload['السعر المطبّق'] = OFFER_ACTIVE
+    ? `عرض خاص ${formatDA(OFFER.price)} بدل ${formatDA(FULL_PRICE)} (${OFFER.label})`
+    : `السعر العادي ${formatDA(FULL_PRICE)}`
   payload['تاريخ الإرسال'] = new Date().toISOString()
   payload['المصدر'] = 'صفحة دورة المدرّب المحترف 4.0 - سطيف'
 

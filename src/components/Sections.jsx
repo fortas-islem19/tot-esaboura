@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import almaahedLogo from '../assets/almaahed.png'
 import esabouraMark from '../assets/esaboura-mark.png'
 import esabouraFull from '../assets/esaboura-full.png'
-import { COURSE, DEPOSIT, PHONES, PRICE, SEATS_TAKEN, SITES, VENUE, WHATSAPP, formatDA } from '../config'
+import { COURSE, DEPOSIT, FULL_PRICE, OFFER, OFFER_ACTIVE, PHONES, PRICE, SEATS_TAKEN, SITES, VENUE, WHATSAPP, formatDA } from '../config'
 import {
   ASSESSMENT, AUDIENCE, CO_TRAINERS, CONTEXT, CONTEXT_INTRO, DAYS, FAQ, FEES_INCLUDE, GOAL, IMPACT_LEVELS, KIT_PRODUCE, KIT_RECEIVE,
   LEAD_TRAINER, LOGISTICS, OUTCOMES, POST_PHASE, PRE_PHASE, PREREQS, STATS, TECHNIQUES, TOOLS,
@@ -73,9 +73,15 @@ export function Header() {
       <div className="announce">
         <div className="wrap announce-inner">
           <span className="dot" aria-hidden="true" />
-          <span>
-            التسجيل مفتوح · <b>{COURSE.seats} مقعدًا فقط</b> · {COURSE.dates} · {COURSE.city}
-          </span>
+          {OFFER_ACTIVE ? (
+            <span>
+              عرض خاص: <b>{formatDA(OFFER.price)}</b> بدل <s>{formatDA(FULL_PRICE)}</s> {OFFER.label} · {COURSE.seats} مقعدًا فقط
+            </span>
+          ) : (
+            <span>
+              التسجيل مفتوح · <b>{COURSE.seats} مقعدًا فقط</b> · {COURSE.dates} · {COURSE.city}
+            </span>
+          )}
         </div>
       </div>
       <header className={`top${solid ? ' solid' : ''}`}>
@@ -100,41 +106,49 @@ export function Header() {
 }
 
 /* ---------- Hero ---------- */
-function useCountdown(iso) {
-  const target = new Date(iso).getTime()
+function useNow() {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
   }, [])
-  const diff = Math.max(target - now, 0)
-  return {
-    over: diff <= 0,
-    d: Math.floor(diff / 864e5),
-    h: Math.floor((diff % 864e5) / 36e5),
-    m: Math.floor((diff % 36e5) / 6e4),
-    s: Math.floor((diff % 6e4) / 1e3),
-  }
+  return now
 }
 
+const split = (diff) => ({
+  over: diff <= 0,
+  d: Math.floor(diff / 864e5),
+  h: Math.floor((diff % 864e5) / 36e5),
+  m: Math.floor((diff % 36e5) / 6e4),
+  s: Math.floor((diff % 6e4) / 1e3),
+})
+
+// Counts down to the end of the offer while it runs, then to the first day of the course
 function Countdown() {
-  const { over, d, h, m, s } = useCountdown(COURSE.startsAt)
+  const now = useNow()
+  const offerLeft = new Date(OFFER.endsAt).getTime() - now
+  const showOffer = OFFER_ACTIVE && offerLeft > 0
+  const { over, d, h, m, s } = split(showOffer ? offerLeft : new Date(COURSE.startsAt).getTime() - now)
   if (over) return null
+  const label = showOffer ? 'ينتهي العرض الخاص بعد' : 'تبدأ الدورة بعد'
   const pad = (n) => String(n).padStart(2, '0')
   return (
-    <div className="countdown" role="timer" aria-label={`تبدأ الدورة بعد ${d} يومًا و${h} ساعة`}>
-      {[
-        [d, 'يوم'],
-        [pad(h), 'ساعة'],
-        [pad(m), 'دقيقة'],
-        [pad(s), 'ثانية'],
-      ].map(([v, l]) => (
-        <span key={l} className="cd-box">
-          <b>{v}</b>
-          <small>{l}</small>
-        </span>
-      ))}
-    </div>
+    <>
+      <p className="cd-title">{label}</p>
+      <div className="countdown" role="timer" aria-label={`${label} ${d} يومًا و${h} ساعة`}>
+        {[
+          [d, 'يوم'],
+          [pad(h), 'ساعة'],
+          [pad(m), 'دقيقة'],
+          [pad(s), 'ثانية'],
+        ].map(([v, l]) => (
+          <span key={l} className="cd-box">
+            <b>{v}</b>
+            <small>{l}</small>
+          </span>
+        ))}
+      </div>
+    </>
   )
 }
 
@@ -195,7 +209,6 @@ export function Hero() {
               <UsersIcon width={16} height={16} /> {seatsLeft} مقعدًا متبقيًا
             </span>
           </div>
-          <p className="cd-title">تبدأ الدورة بعد</p>
           <Countdown />
           <ul className="event-facts">
             {facts.map(([Icon, label, value]) => (
@@ -211,9 +224,13 @@ export function Hero() {
             ))}
           </ul>
           <div className="event-price">
+            {OFFER_ACTIVE && <span className="offer-badge">عرض خاص {OFFER.label}</span>}
             <div>
               <small>رسوم المشاركة</small>
-              <b>{formatDA(PRICE)}</b>
+              <span className="price-pair">
+                {OFFER_ACTIVE && <s className="old">{formatDA(FULL_PRICE)}</s>}
+                <b>{formatDA(PRICE)}</b>
+              </span>
             </div>
             <p>
               يُثبَّت المقعد بتسبيق 50%: <b>{formatDA(DEPOSIT)}</b>
@@ -745,12 +762,21 @@ export function Pricing() {
         <SectionTitle light kicker="الشروط التنظيمية والمالية" title="استثمر في مسارك كمدرّب" />
         <Reveal className="ticket">
           <div className="ticket-main">
-            <span className="ticket-tag">رسوم المشاركة للمشارك</span>
+            <span className="ticket-tag">{OFFER_ACTIVE ? `عرض خاص ${OFFER.label} فقط` : 'رسوم المشاركة للمشارك'}</span>
+            {OFFER_ACTIVE && (
+              <p className="ticket-old">
+                بدل <s>{formatDA(FULL_PRICE)}</s>
+                <span className="save">وفّر {formatDA(FULL_PRICE - PRICE)}</span>
+              </p>
+            )}
             <div className="ticket-price">
               <b>{PRICE.toLocaleString('en-US')}</b>
               <span>دج</span>
             </div>
-            <p className="ticket-sub">تشمل الدورة كاملة: 4 أيام حضورية + المرحلتان القبلية والبعدية.</p>
+            <p className="ticket-sub">
+              تشمل الدورة كاملة: 4 أيام حضورية + المرحلتان القبلية والبعدية.
+              {OFFER_ACTIVE && ` يعود السعر إلى ${formatDA(FULL_PRICE)} بعد انتهاء العرض.`}
+            </p>
             <ul className="ticks">
               {FEES_INCLUDE.map((x) => (
                 <li key={x}>
@@ -893,7 +919,13 @@ export function MobileBar() {
         <motion.div className="mbar" initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} transition={{ type: 'tween', duration: 0.25 }}>
           <div className="mbar-price">
             <b>{formatDA(PRICE)}</b>
-            <small>بقي {seatsLeft} مقعدًا</small>
+            {OFFER_ACTIVE ? (
+              <small>
+                بدل <s>{formatDA(FULL_PRICE)}</s>
+              </small>
+            ) : (
+              <small>بقي {seatsLeft} مقعدًا</small>
+            )}
           </div>
           <a href="#register" className="btn btn-orange">
             سجّل الآن
