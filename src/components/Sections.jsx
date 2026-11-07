@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import almaahedLogo from '../assets/almaahed.png'
 import esabouraMark from '../assets/esaboura-mark.png'
@@ -538,10 +538,139 @@ export function Program() {
 }
 
 /* ---------- Trainers ---------- */
+// Everything we know about a trainer, shown in the «المزيد» window
+function TrainerDetails({ t }) {
+  return (
+    <div className="td-body">
+      {t.award && (
+        <p className="td-award">
+          <AwardIcon width={20} height={20} />
+          <span>
+            <b>{t.award}</b>
+            <small dir="ltr">{t.awardBy}</small>
+          </span>
+        </p>
+      )}
+      {t.tags && (
+        <div className="ft-tags">
+          {t.tags.map((x) => (
+            <span key={x}>{x}</span>
+          ))}
+        </div>
+      )}
+      {t.numbers && (
+        <div className="lead-nums">
+          {t.numbers.map(([n, l]) => (
+            <span key={l}>
+              <b dir="ltr">{n}</b>
+              <small>{l}</small>
+            </span>
+          ))}
+        </div>
+      )}
+      {Array.isArray(t.bio) ? (
+        <>
+          <h4 className="ft-sub">نبذة</h4>
+          <ul className="ticks">
+            {t.bio.map((x) => (
+              <li key={x}>
+                <CheckIcon width={18} height={18} />
+                {x}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        t.bio && (
+          <>
+            <h4 className="ft-sub">نبذة مهنية</h4>
+            <p className="ft-bio">{t.bio}</p>
+          </>
+        )
+      )}
+      {t.areas && (
+        <>
+          <h4 className="ft-sub">مجالات التدريب والتخصص</h4>
+          <ul className="ft-areas">
+            {t.areas.map(([title, desc]) => (
+              <li key={title}>
+                <b>{title}</b>
+                <span>{desc}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {t.skills && (
+        <>
+          <h4 className="ft-sub">الكفاءات والمهارات التدريبية</h4>
+          <ul className="ticks ft-skills">
+            {t.skills.map((x) => (
+              <li key={x}>
+                <CheckIcon width={18} height={18} />
+                {x}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {t.vision && (
+        <blockquote className="ft-vision">
+          <b>الرؤية التدريبية</b>
+          <p>{t.vision}</p>
+        </blockquote>
+      )}
+    </div>
+  )
+}
+
+// Full profile in a native modal dialog: traps focus, closes with Esc, the × button or a click outside
+function TrainerDialog({ t, onClose }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    const d = ref.current
+    if (d && !d.open) d.showModal?.()
+    d?.addEventListener('close', onClose)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      d?.removeEventListener('close', onClose)
+      document.body.style.overflow = prev
+    }
+  }, [onClose])
+  return (
+    <dialog
+      ref={ref}
+      className="tdialog"
+      aria-labelledby="tdialog-title"
+      onClick={(e) => {
+        if (e.target === ref.current) onClose()
+      }}
+    >
+      <div className="td-inner">
+        <button type="button" className="td-close" onClick={onClose} aria-label="إغلاق">
+          ×
+        </button>
+        <div className="td-head">
+          <Avatar src={t.photo} initials={t.initials} alt={t.name} className="lg" />
+          <div>
+            <span className="kicker">{t.role}</span>
+            <h3 id="tdialog-title">{t.name}</h3>
+            {t.headline && <p className="ft-headline">{t.headline}</p>}
+          </div>
+        </div>
+        <TrainerDetails t={t} />
+      </div>
+    </dialog>
+  )
+}
+
 export function Trainers() {
-  const t = LEAD_TRAINER
-  const featured = CO_TRAINERS.filter((c) => c.featured)
+  const people = [{ ...LEAD_TRAINER, key: 'lead' }, ...CO_TRAINERS.filter((c) => c.featured).map((c) => ({ ...c, key: c.name }))]
   const others = CO_TRAINERS.filter((c) => !c.featured)
+  const [openKey, setOpenKey] = useState(null)
+  const open = people.find((p) => p.key === openKey)
+  const close = useRef(() => setOpenKey(null)).current
   return (
     <section className="sec" id="trainers">
       <div className="wrap">
@@ -551,87 +680,31 @@ export function Trainers() {
           text="يؤطّر الدورة فريق من 4 مدربين بقيادة د. أيوب بوخاتم، ما يسمح بمتابعة فردية دقيقة وبتنشيط التدريب المصغّر في قاعات متوازية بتقييم مدرّب مختص في كل قاعة."
         />
         <div className="featured">
-          <Reveal className="ft-card">
-            <div className="ft-photo">
-              <Avatar src={t.photo} initials={t.initials} alt={t.name} className="feature" />
-              <span className="award">
-                <AwardIcon width={20} height={20} />
-                <span>
-                  <b>{t.award}</b>
-                  <small dir="ltr">{t.awardBy}</small>
-                </span>
-              </span>
-            </div>
-            <div className="ft-body">
-              <span className="kicker">{t.role}</span>
-              <h3>{t.name}</h3>
-              <div className="lead-nums">
-                {t.numbers.map(([n, l]) => (
-                  <span key={l}>
-                    <b dir="ltr">{n}</b>
-                    <small>{l}</small>
-                  </span>
-                ))}
-              </div>
-              <ul className="ticks">
-                {t.bio.map((x) => (
-                  <li key={x}>
-                    <CheckIcon width={18} height={18} />
-                    {x}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-          {featured.map((c) => (
-            <Reveal key={c.name} className="ft-card" delay={0.08}>
+          {people.map((p, i) => (
+            <Reveal key={p.key} className="ft-card" delay={i * 0.08}>
               <div className="ft-photo">
-                <Avatar src={c.photoLarge || c.photo} initials={c.initials} alt={c.name} className="feature" />
+                <Avatar src={p.photoLarge || p.photo} initials={p.initials} alt={p.name} className="feature" />
+                {p.award && (
+                  <span className="award">
+                    <AwardIcon width={20} height={20} />
+                    <span>
+                      <b>{p.award}</b>
+                      <small dir="ltr">{p.awardBy}</small>
+                    </span>
+                  </span>
+                )}
               </div>
               <div className="ft-body">
-                <span className="kicker">{c.role}</span>
-                <h3>{c.name}</h3>
-                {c.headline && <p className="ft-headline">{c.headline}</p>}
-                {c.tags && (
-                  <div className="ft-tags">
-                    {c.tags.map((x) => (
-                      <span key={x}>{x}</span>
-                    ))}
-                  </div>
-                )}
-                {c.bio && <p className="ft-bio">{c.bio}</p>}
-                {c.areas && (
-                  <>
-                    <h4 className="ft-sub">مجالات التدريب والتخصص</h4>
-                    <ul className="ft-areas">
-                      {c.areas.map(([title, desc]) => (
-                        <li key={title}>
-                          <b>{title}</b>
-                          <span>{desc}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-                {c.skills && (
-                  <>
-                    <h4 className="ft-sub">الكفاءات والمهارات التدريبية</h4>
-                    <ul className="ticks ft-skills">
-                      {c.skills.map((x) => (
-                        <li key={x}>
-                          <CheckIcon width={18} height={18} />
-                          {x}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-                {c.vision && (
-                  <blockquote className="ft-vision">
-                    <b>الرؤية التدريبية</b>
-                    <p>{c.vision}</p>
-                  </blockquote>
-                )}
+                <span className="kicker">{p.role}</span>
+                <h3>{p.name}</h3>
+                {p.headline && <p className="ft-headline">{p.headline}</p>}
+                {p.summary && <p className="ft-summary">{p.summary}</p>}
+                <div className="ft-actions">
+                  <button type="button" className="btn btn-more" onClick={() => setOpenKey(p.key)} aria-haspopup="dialog">
+                    المزيد
+                    <ArrowIcon width={18} height={18} />
+                  </button>
+                </div>
               </div>
             </Reveal>
           ))}
@@ -647,6 +720,7 @@ export function Trainers() {
           ))}
         </div>
       </div>
+      {open && <TrainerDialog t={open} onClose={close} />}
     </section>
   )
 }
