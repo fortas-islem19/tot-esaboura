@@ -14,7 +14,7 @@ Built with React, Vite and Framer Motion, like the "الأستاذ الرقمي"
 6. The approach («عِش، حلّل، طبّق») and the 14 techniques, with the day each is practised
 7. The path: 4 in-person days, then a 30-day follow-up
 8. Detailed programme, with a tab for each day and that day's product
-9. Trainers: the lead trainer and Dr Tebbani side by side with large photos, then the 2 other co-trainers
+9. Trainers: the lead trainer and Prof. Tebbani side by side with large photos (Prof. Tebbani with his full profile: bio, training areas, competencies and vision), then the 2 other co-trainers
 10. Assessment and certification (weights, thresholds, impact levels)
 11. Training kit: what you receive and what you produce
 12. Who it's for, prerequisites, room and equipment

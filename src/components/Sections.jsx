@@ -591,7 +591,47 @@ export function Trainers() {
               <div className="ft-body">
                 <span className="kicker">{c.role}</span>
                 <h3>{c.name}</h3>
+                {c.headline && <p className="ft-headline">{c.headline}</p>}
+                {c.tags && (
+                  <div className="ft-tags">
+                    {c.tags.map((x) => (
+                      <span key={x}>{x}</span>
+                    ))}
+                  </div>
+                )}
                 {c.bio && <p className="ft-bio">{c.bio}</p>}
+                {c.areas && (
+                  <>
+                    <h4 className="ft-sub">مجالات التدريب والتخصص</h4>
+                    <ul className="ft-areas">
+                      {c.areas.map(([title, desc]) => (
+                        <li key={title}>
+                          <b>{title}</b>
+                          <span>{desc}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {c.skills && (
+                  <>
+                    <h4 className="ft-sub">الكفاءات والمهارات التدريبية</h4>
+                    <ul className="ticks ft-skills">
+                      {c.skills.map((x) => (
+                        <li key={x}>
+                          <CheckIcon width={18} height={18} />
+                          {x}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                {c.vision && (
+                  <blockquote className="ft-vision">
+                    <b>الرؤية التدريبية</b>
+                    <p>{c.vision}</p>
+                  </blockquote>
+                )}
               </div>
             </Reveal>
           ))}
