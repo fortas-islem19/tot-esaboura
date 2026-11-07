@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import almaahedLogo from '../assets/almaahed.png'
 import esabouraMark from '../assets/esaboura-mark.png'
 import esabouraFull from '../assets/esaboura-full.png'
-import { COURSE, DEPOSIT, FULL_PRICE, OFFER, OFFER_ACTIVE, PHONES, PRICE, SEATS_TAKEN, SITES, VENUE, WHATSAPP, formatDA } from '../config'
+import { ALUMNI, COURSE, DEPOSIT, EARLY, EARLY_ACTIVE, FULL_PRICE, PHONES, PRICE, SEATS_TAKEN, SHOW_TECH_CARD, SITES, VENUE, WHATSAPP, depositFor, formatDA } from '../config'
 import {
   ASSESSMENT, AUDIENCE, CO_TRAINERS, CONTEXT, CONTEXT_INTRO, DAYS, FAQ, FEES_INCLUDE, GOAL, IMPACT_LEVELS, KIT_PRODUCE, KIT_RECEIVE,
   LEAD_TRAINER, LOGISTICS, OUTCOMES, POST_PHASE, PRE_PHASE, PREREQS, STATS, TECHNIQUES, TOOLS,
@@ -73,13 +73,13 @@ export function Header() {
       <div className="announce">
         <div className="wrap announce-inner">
           <span className="dot" aria-hidden="true" />
-          {OFFER_ACTIVE ? (
+          {EARLY_ACTIVE ? (
             <span>
-              عرض خاص: <b>{formatDA(OFFER.price)}</b> بدل <s>{formatDA(FULL_PRICE)}</s> {OFFER.label} · {COURSE.seats} مقعدًا فقط
+              {EARLY.label}: <b>{formatDA(EARLY.price)}</b> بدل <s>{formatDA(EARLY.was)}</s> · مشاركو منصة السبورة: + {ALUMNI.gift}
             </span>
           ) : (
             <span>
-              التسجيل مفتوح · <b>{COURSE.seats} مقعدًا فقط</b> · {COURSE.dates} · {COURSE.city}
+              {COURSE.dates} · مشاركو منصة السبورة: <b>{formatDA(ALUMNI.price)}</b> + {ALUMNI.gift}
             </span>
           )}
         </div>
@@ -123,14 +123,14 @@ const split = (diff) => ({
   s: Math.floor((diff % 6e4) / 1e3),
 })
 
-// Counts down to the end of the offer while it runs, then to the first day of the course
+// Counts down to the end of early registration while it runs, then to the first day of the course
 function Countdown() {
   const now = useNow()
-  const offerLeft = new Date(OFFER.endsAt).getTime() - now
-  const showOffer = OFFER_ACTIVE && offerLeft > 0
-  const { over, d, h, m, s } = split(showOffer ? offerLeft : new Date(COURSE.startsAt).getTime() - now)
+  const earlyLeft = new Date(EARLY.endsAt).getTime() - now
+  const showEarly = EARLY_ACTIVE && earlyLeft > 0
+  const { over, d, h, m, s } = split(showEarly ? earlyLeft : new Date(COURSE.startsAt).getTime() - now)
   if (over) return null
-  const label = showOffer ? 'ينتهي العرض الخاص بعد' : 'تبدأ الدورة بعد'
+  const label = showEarly ? 'ينتهي سعر التسجيل المبكر بعد' : 'تبدأ الدورة بعد'
   const pad = (n) => String(n).padStart(2, '0')
   return (
     <>
@@ -184,9 +184,15 @@ export function Hero() {
               احجز مقعدك الآن
               <ArrowIcon width={20} height={20} />
             </a>
-            <a href={PDF_URL} className="btn btn-ghost btn-lg" target="_blank" rel="noopener">
-              البطاقة التقنية (PDF)
-            </a>
+            {SHOW_TECH_CARD ? (
+              <a href={PDF_URL} className="btn btn-ghost btn-lg" target="_blank" rel="noopener">
+                البطاقة التقنية (PDF)
+              </a>
+            ) : (
+              <a href="#program" className="btn btn-ghost btn-lg">
+                البرنامج التفصيلي
+              </a>
+            )}
           </motion.div>
           <motion.div className="lead-chip" {...up(0.4)}>
             <Avatar src={LEAD_TRAINER.photo} initials={LEAD_TRAINER.initials} alt={LEAD_TRAINER.name} />
@@ -224,16 +230,19 @@ export function Hero() {
             ))}
           </ul>
           <div className="event-price">
-            {OFFER_ACTIVE && <span className="offer-badge">عرض خاص {OFFER.label}</span>}
+            {EARLY_ACTIVE && <span className="offer-badge">التسجيل المبكر {EARLY.label}</span>}
             <div>
-              <small>رسوم المشاركة</small>
+              <small>{EARLY_ACTIVE ? `السعر الكلي ${formatDA(FULL_PRICE)}` : 'رسوم المشاركة'}</small>
               <span className="price-pair">
-                {OFFER_ACTIVE && <s className="old">{formatDA(FULL_PRICE)}</s>}
+                {EARLY_ACTIVE && <s className="old">{formatDA(EARLY.was)}</s>}
                 <b>{formatDA(PRICE)}</b>
               </span>
             </div>
             <p>
               يُثبَّت المقعد بتسبيق 50%: <b>{formatDA(DEPOSIT)}</b>
+            </p>
+            <p className="alumni-line">
+              شاركت في منصة السبورة؟ <b>{formatDA(ALUMNI.price)}</b> + {ALUMNI.gift}
             </p>
           </div>
           <a href="#register" className="btn btn-orange btn-block">
@@ -756,27 +765,58 @@ export function Audience() {
 /* ---------- Pricing ---------- */
 export function Pricing() {
   const pct = Math.round((seatsLeft / COURSE.seats) * 100)
+  const tiers = [
+    EARLY_ACTIVE && {
+      key: 'early',
+      tag: `التسجيل المبكر · ${EARLY.label}`,
+      who: 'لكل من يسجّل قبل 1 ديسمبر',
+      price: EARLY.price,
+      was: EARLY.was,
+      note: 'ينتهي يوم 30 نوفمبر',
+      hot: true,
+    },
+    {
+      key: 'alumni',
+      tag: 'مشاركو منصة السبورة',
+      who: 'لمن شارك معنا ولو في دورة واحدة على منصة السبورة',
+      price: ALUMNI.price,
+      gift: ALUMNI.giftLong,
+      note: 'ساري حتى بداية الدورة',
+      hot: !EARLY_ACTIVE,
+    },
+    {
+      key: 'full',
+      tag: 'السعر الكلي',
+      who: EARLY_ACTIVE ? 'ابتداءً من 1 ديسمبر' : 'لكل المسجلين',
+      price: FULL_PRICE,
+    },
+  ].filter(Boolean)
   return (
     <section className="sec sec-dark" id="pricing">
       <div className="wrap">
-        <SectionTitle light kicker="الشروط التنظيمية والمالية" title="استثمر في مسارك كمدرّب" />
+        <SectionTitle light kicker="الشروط التنظيمية والمالية" title="استثمر في مسارك كمدرّب" text="الرسوم تشمل الدورة كاملة: 4 أيام حضورية + المرحلتان القبلية والبعدية." />
+        <div className={`tiers n${tiers.length}`}>
+          {tiers.map((t, i) => (
+            <Reveal key={t.key} className={`tier${t.hot ? ' hot' : ''}`} delay={i * 0.06}>
+              <span className="tier-tag">{t.tag}</span>
+              <p className="tier-who">{t.who}</p>
+              <div className="tier-price">
+                <b>{t.price.toLocaleString('en-US')}</b>
+                <span>دج</span>
+                {t.was && <s>{formatDA(t.was)}</s>}
+              </div>
+              {t.gift && <p className="tier-gift">+ {t.gift}</p>}
+              <p className="tier-dep">
+                تسبيق 50%: <b>{formatDA(depositFor(t.price))}</b>
+              </p>
+              {t.note && <small className="tier-note">{t.note}</small>}
+            </Reveal>
+          ))}
+        </div>
         <Reveal className="ticket">
           <div className="ticket-main">
-            <span className="ticket-tag">{OFFER_ACTIVE ? `عرض خاص ${OFFER.label} فقط` : 'رسوم المشاركة للمشارك'}</span>
-            {OFFER_ACTIVE && (
-              <p className="ticket-old">
-                بدل <s>{formatDA(FULL_PRICE)}</s>
-                <span className="save">وفّر {formatDA(FULL_PRICE - PRICE)}</span>
-              </p>
-            )}
-            <div className="ticket-price">
-              <b>{PRICE.toLocaleString('en-US')}</b>
-              <span>دج</span>
-            </div>
-            <p className="ticket-sub">
-              تشمل الدورة كاملة: 4 أيام حضورية + المرحلتان القبلية والبعدية.
-              {OFFER_ACTIVE && ` يعود السعر إلى ${formatDA(FULL_PRICE)} بعد انتهاء العرض.`}
-            </p>
+            <span className="ticket-tag">ما تشمله الرسوم</span>
+            <p className="ticket-sub">نفس المحتوى والخدمات في كل الأسعار.</p>
             <ul className="ticks">
               {FEES_INCLUDE.map((x) => (
                 <li key={x}>
@@ -788,8 +828,8 @@ export function Pricing() {
           </div>
           <div className="ticket-side">
             <div className="deposit">
-              <small>يُثبَّت المقعد بتسبيق 50%</small>
-              <b>{formatDA(DEPOSIT)}</b>
+              <small>يُثبَّت المقعد بتسبيق</small>
+              <b>50% من السعر</b>
             </div>
             <div className="seats">
               <div className="seats-top">
@@ -886,9 +926,12 @@ export function Footer() {
                 <span dir="ltr">{s}</span>
               </a>
             ))}
-            <a href={PDF_URL} target="_blank" rel="noopener">
-              البطاقة التقنية (PDF)
-            </a>
+            {SHOW_TECH_CARD && (
+              <a href={PDF_URL} target="_blank" rel="noopener">
+                البطاقة التقنية (PDF)
+              </a>
+            )}
+            <a href="#pricing">الرسوم</a>
             <a href="#register">التسجيل</a>
           </div>
         </div>
@@ -919,9 +962,9 @@ export function MobileBar() {
         <motion.div className="mbar" initial={{ y: 100 }} animate={{ y: 0 }} exit={{ y: 100 }} transition={{ type: 'tween', duration: 0.25 }}>
           <div className="mbar-price">
             <b>{formatDA(PRICE)}</b>
-            {OFFER_ACTIVE ? (
+            {EARLY_ACTIVE ? (
               <small>
-                بدل <s>{formatDA(FULL_PRICE)}</s>
+                بدل <s>{formatDA(EARLY.was)}</s>
               </small>
             ) : (
               <small>بقي {seatsLeft} مقعدًا</small>

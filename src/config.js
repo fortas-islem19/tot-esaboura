@@ -14,11 +14,11 @@ export const COURSE = {
   title: 'المدرّب المحترف 4.0',
   subtitle: 'تصميم تجارب التعلّم وتيسيرها بأحدث التقنيات',
   english: 'Training of Trainers (ToT) Advanced Programme',
-  dates: '25 – 28 نوفمبر 2026',
-  datesLong: 'من 25 إلى 28 نوفمبر 2026',
+  dates: '9 – 12 ديسمبر 2026',
+  datesLong: 'من 9 إلى 12 ديسمبر 2026',
   hours: 'من 08:30 إلى 16:30',
   // Start of day one, used by the countdown (Algeria time, UTC+1)
-  startsAt: '2026-11-25T08:30:00+01:00',
+  startsAt: '2026-12-09T08:30:00+01:00',
   days: 4,
   totalHours: 28,
   // Registration is capped at 20 participants (the card's general range is 10 to 30)
@@ -27,28 +27,43 @@ export const COURSE = {
   organizers: 'المعهد إنترناشيونال × السبورة',
 }
 
-// Regular fee from the technical card
+// Full fee for the course
 export const FULL_PRICE = 90000
 
-// Launch offer: 57,000 DA instead of 90,000 DA for registrations until 22 November 2026.
-// After endsAt the page switches back to FULL_PRICE on its own.
-export const OFFER = {
-  price: 57000,
-  endsAt: '2026-11-22T23:59:59+01:00', // end of 22 November, Algeria time
-  label: 'إلى غاية 22 نوفمبر',
+// Early registration: 63,000 DA (shown "instead of 70,000 DA") for everyone who registers
+// before 1 December 2026. After endsAt the page switches to FULL_PRICE on its own.
+export const EARLY = {
+  price: 63000,
+  was: 70000,
+  endsAt: '2026-11-30T23:59:59+01:00', // end of 30 November, Algeria time
+  label: 'قبل 1 ديسمبر',
 }
-export const OFFER_ACTIVE = Date.now() < new Date(OFFER.endsAt).getTime()
+export const EARLY_ACTIVE = Date.now() < new Date(EARLY.endsAt).getTime()
 
-// Fee that applies right now
-export const PRICE = OFFER_ACTIVE ? OFFER.price : FULL_PRICE
-// A 50% deposit confirms the seat (28,500 DA during the offer, 45,000 DA after it)
-export const DEPOSIT = Math.round(PRICE / 2)
+// People who took at least one course on the e-Saboura platform: 63,000 DA until the course
+// starts, plus a free one-month Claude account on their personal email.
+export const ALUMNI = {
+  price: 63000,
+  gift: 'حساب Claude لمدة شهر مجانًا',
+  giftLong: 'حساب Claude لمدة شهر مجانًا على بريدك الإلكتروني الشخصي',
+}
+
+// Fee for a new participant right now, and the fee for a given registration
+export const PRICE = EARLY_ACTIVE ? EARLY.price : FULL_PRICE
+export const priceFor = (alumni) => (alumni ? Math.min(ALUMNI.price, PRICE) : PRICE)
+// A 50% deposit confirms the seat (31,500 DA at 63,000 DA, 45,000 DA at 90,000 DA)
+export const depositFor = (price) => Math.round(price / 2)
+export const DEPOSIT = depositFor(PRICE)
+
+// The technical card PDF still carries the old dates (25–28 November). Set this to true
+// once public/fiche-technique-tot-pro-26.pdf is replaced with the updated card.
+export const SHOW_TECH_CARD = false
 
 // Seats already booked. Drives the "seats left" bar; update it as registrations come in.
 export const SEATS_TAKEN = 0
 
 export const VENUE = {
-  name: 'مقر السبورة (e-Saboura)',
+  name: 'مقر مدرسة السبورة (e-Saboura)',
   city: 'سطيف',
   // Optional Google Maps link to the venue. Leave empty to hide the map button.
   mapsLink: '',
@@ -66,13 +81,13 @@ export const SITES = ['almaahed.com', 'esaboura.com']
 
 // Payment: same methods and accounts as the "الأستاذ الرقمي" page.
 export const PAYMENT = {
-  // Slick-Pay payment links (CIB / Edahabia), created in the Slick-Pay dashboard for THIS course.
-  // The online option only shows for an amount whose link is filled in.
-  // During the offer the amounts are 28,500 DA (deposit) and 57,000 DA (full);
-  // after 22 November they become 45,000 DA and 90,000 DA, so the links need updating then.
+  // Slick-Pay payment links (CIB / Edahabia), created in the Slick-Pay dashboard for THIS course,
+  // one per amount. The online option only shows for an amount whose link is filled in.
   slickLinks: {
-    deposit: '', // link for DEPOSIT
-    full: '', // link for PRICE
+    31500: '', // deposit at 63,000 DA (early registration or e-Saboura alumni)
+    63000: '', // full fee at 63,000 DA
+    45000: '', // deposit at 90,000 DA (from 1 December)
+    90000: '', // full fee at 90,000 DA
   },
   ccp: { account: '6650093', key: '11', holder: 'Abdeslam Hetatache' },
   baridimobRib: '00799999000665009314',

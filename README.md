@@ -1,13 +1,13 @@
 # ToT Esaboura — المدرّب المحترف 4.0
 
-Landing page and registration form for the joint **Almaahed International × e-Saboura** course *المدرّب المحترف 4.0: تصميم تجارب التعلّم وتيسيرها بأحدث التقنيات* (Training of Trainers Advanced Programme, `ToT-PRO-26`), held 25–28 November 2026 at the e-Saboura venue in Sétif. All content comes from the course's technical card (البطاقة التقنية), which can be downloaded from the page (`public/fiche-technique-tot-pro-26.pdf`).
+Landing page and registration form for the joint **Almaahed International × e-Saboura** course *المدرّب المحترف 4.0: تصميم تجارب التعلّم وتيسيرها بأحدث التقنيات* (Training of Trainers Advanced Programme, `ToT-PRO-26`), held 9–12 December 2026 at the e-Saboura school (مقر مدرسة السبورة) in Sétif. All content comes from the course's technical card (البطاقة التقنية). The card PDF (`public/fiche-technique-tot-pro-26.pdf`) still shows the old dates, so its download links are hidden (`SHOW_TECH_CARD` in `src/config.js`) until it is replaced with the updated card.
 
 Built with React, Vite and Framer Motion, like the "الأستاذ الرقمي" page (`Digital-Tutor-Algiers`), and it takes the same payment flow.
 
 ## Sections
 
 1. Announcement bar and sticky header with both logos
-2. Hero: title, lead trainer, PDF button, and an event card with a live countdown (to the end of the offer, then to day one), key facts, price and deposit
+2. Hero: title, lead trainer, and an event card with a live countdown (to the end of early registration, then to day one), key facts, price, deposit and the e-Saboura alumni offer
 3. The course in numbers, plus a scrolling strip of models and tools
 4. Why this course (context)
 5. The 9 target competencies and their measurable outcomes
@@ -18,7 +18,7 @@ Built with React, Vite and Framer Motion, like the "الأستاذ الرقمي"
 10. Assessment and certification (weights, thresholds, impact levels)
 11. Training kit: what you receive and what you produce
 12. Who it's for, prerequisites, room and equipment
-13. Price ticket with deposit, seats left and payment methods
+13. Price cards (early registration, e-Saboura alumni, full price), then what the fee includes, seats left and payment methods
 14. FAQ
 15. Registration form in 3 steps
 16. Footer, plus a bar fixed to the bottom of phone screens
@@ -56,31 +56,39 @@ Validation (in `src/lib/validate.js`):
 - Phone: Algerian mobile (05/06/07). Accepts `0661234567`, `06 61 23 45 67`, `+213…` and `00213…`, and is sent as `0XXXXXXXXX`
 - Email, wilaya, status (الصفة), training experience, device: required
 - Organisation and session topic: optional
+- Took a course on the e-Saboura platform (yes/no): required; if yes, the course name is required
 - Amount (50% deposit or full fee) and payment method: required
 - Consent: required
 - A hidden honeypot field drops bot submissions
 
-Submissions go to FormBold as JSON with Arabic field names, the course name and the chosen amount and method. The form is `https://formbold.com/s/9xKjX` (`FORMBOLD_FORM_ID` in `src/config.js`). To use another service, set `VITE_FORM_ENDPOINT` in `.env`.
+Submissions go to FormBold as JSON with Arabic field names, the course name, the alumni answer, the price that applied (`السعر المطبّق`) and the chosen amount and method. The form is `https://formbold.com/s/9xKjX` (`FORMBOLD_FORM_ID` in `src/config.js`). To use another service, set `VITE_FORM_ENDPOINT` in `.env`.
 
 ## Payment
 
 Same methods and accounts as the "الأستاذ الرقمي" page. The registration is always sent to FormBold first.
 
-- **Online (الدفع الإلكتروني):** after registering, the person is sent to a Slick-Pay link (CIB / Edahabia). Fill in `PAYMENT.slickLinks.deposit` and/or `PAYMENT.slickLinks.full` in `src/config.js` with links created for this course. The online option only appears for an amount that has a link; with no links it is hidden.
+- **Online (الدفع الإلكتروني):** after registering, the person is sent to a Slick-Pay link (CIB / Edahabia). `PAYMENT.slickLinks` in `src/config.js` has one entry per amount (31,500, 63,000, 45,000 and 90,000 DA). The online option only appears for an amount that has a link; with no links it is hidden.
 - **Post office transfer (الدفع عبر البريد):** the CCP and BaridiMob details appear in the form and again on the thank-you screen, each with a copy button. A button opens WhatsApp (`WHATSAPP`) with a ready-made message for sending the receipt.
 
 ## Meta Pixel
 
 Paste the Pixel ID into `window.META_PIXEL_ID` in `index.html`. With an ID set, the page tracks `PageView`, and `Purchase` (the chosen amount in DZD, with the status as `content_category`) once FormBold accepts a registration. With no ID, nothing is loaded.
 
-## Price and offer
+## Prices
 
-The regular fee is 90,000 DA (`FULL_PRICE`). Until **22 November 2026** (`OFFER.endsAt`) the page shows a special price of **57,000 DA** (`OFFER.price`) instead of 90,000 DA: in the announcement bar, the hero card (whose countdown then counts down to the end of the offer), the price ticket, the FAQ, the form and the mobile bar. Each registration sent to FormBold also carries the price that applied (`السعر المطبّق`).
+All prices are in `src/config.js`:
 
-When the offer ends, the page switches back to 90,000 DA by itself and the countdown counts down to the first day of the course. The 50% deposit follows the price: 28,500 DA during the offer, 45,000 DA after it. If Slick-Pay links are used, create them for these amounts and update them after 22 November.
+| Who | Price | Deposit (50%) | Until |
+| --- | --- | --- | --- |
+| Everyone who registers before 1 December (`EARLY`) | 63,000 DA, shown "instead of 70,000 DA" | 31,500 DA | end of 30 November |
+| People who took at least one course on the e-Saboura platform (`ALUMNI`) | 63,000 DA + a free one-month Claude account on their personal email | 31,500 DA | the start of the course |
+| Everyone else (`FULL_PRICE`) | 90,000 DA | 45,000 DA | from 1 December |
+
+On 1 December the page switches by itself: the early-registration card and banner disappear, the price becomes 90,000 DA, and the hero countdown counts down to the first day instead of the end of early registration. The form works out each person's price from their answer to the e-Saboura question.
 
 ## Updating
 
 - `SEATS_TAKEN` in `src/config.js` drives "seats left" across the page; update it as registrations come in.
-- `OFFER` in `src/config.js`: change the price, end date or label of the offer.
+- `EARLY`, `ALUMNI` and `FULL_PRICE` in `src/config.js`: change prices, the early-registration deadline or the alumni gift.
+- `SHOW_TECH_CARD`: set to `true` after replacing the PDF with the updated technical card.
 - `VENUE.mapsLink`: optional Google Maps link to the venue.

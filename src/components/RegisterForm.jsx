@@ -3,16 +3,20 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { submitRegistration } from '../lib/submit'
 import { normalizePhone, validate } from '../lib/validate'
 import { WILAYAS } from '../lib/wilayas'
-import { COURSE, DEPOSIT, FULL_PRICE, OFFER, OFFER_ACTIVE, PAYMENT, PHONES, PRICE, VENUE, WHATSAPP, formatDA } from '../config'
+import { ALUMNI, COURSE, DEPOSIT, EARLY, EARLY_ACTIVE, FULL_PRICE, PAYMENT, PHONES, VENUE, WHATSAPP, depositFor, formatDA, priceFor } from '../config'
 import { Reveal } from './Motion'
 import { seatsLeft } from './Sections'
 
-const AMOUNTS = {
-  deposit: { value: DEPOSIT, title: 'تسبيق 50% لتثبيت المقعد', label: `تسبيق 50% (${formatDA(DEPOSIT)})` },
-  full: { value: PRICE, title: OFFER_ACTIVE ? 'كامل الرسوم بسعر العرض الخاص' : 'كامل رسوم المشاركة', label: `كامل الرسوم (${formatDA(PRICE)})` },
-}
-const hasLink = (amount) => Boolean(PAYMENT.slickLinks?.[amount])
-const ONLINE_AVAILABLE = hasLink('deposit') || hasLink('full')
+// What the person can pay now, for the fee that applies to them
+const amountsFor = (price) => ({
+  deposit: { value: depositFor(price), title: 'تسبيق 50% لتثبيت المقعد', label: `تسبيق 50% (${formatDA(depositFor(price))})` },
+  full: { value: price, title: 'كامل رسوم المشاركة', label: `كامل الرسوم (${formatDA(price)})` },
+})
+// Slick-Pay links are set per amount in config.js
+const hasLink = (value) => Boolean(PAYMENT.slickLinks?.[value])
+const ONLINE_AVAILABLE = Object.values(PAYMENT.slickLinks || {}).some(Boolean)
+const priceNameFor = (alumni) =>
+  alumni ? `سعر مشاركي منصة السبورة + ${ALUMNI.gift}` : EARLY_ACTIVE ? `سعر التسجيل المبكر (${EARLY.label})` : 'السعر الكلي'
 
 const initial = {
   fullName: '',
@@ -24,8 +28,10 @@ const initial = {
   organization: '',
   topic: '',
   device: '',
+  alumni: '',
+  pastCourse: '',
   amount: 'deposit',
-  payment: hasLink('deposit') ? 'online' : 'transfer',
+  payment: hasLink(DEPOSIT) ? 'online' : 'transfer',
   notes: '',
   consent: false,
   website: '', // honeypot
@@ -43,6 +49,7 @@ const PROFILES = [
 ]
 const EXPERIENCE = ['بدون خبرة تدريبية', 'أقل من سنتين', 'من 2 إلى 5 سنوات', 'أكثر من 5 سنوات']
 const DEVICES = ['حاسوب محمول', 'هاتف ذكي فقط']
+const YES_NO = ['نعم', 'لا']
 const NOTES_MAX = 500
 const PAYMENT_LABEL = { online: 'دفع إلكتروني (رابط Slick-Pay)', transfer: 'تحويل CCP / بريدي موب' }
 
@@ -115,7 +122,7 @@ function CopyRow({ label, value }) {
   )
 }
 
-function TransferDetails({ amount }) {
+function TransferDetails({ value, title }) {
   return (
     <div className="pay-details">
       <h4>للدفع عن طريق الحساب البريدي (CCP)</h4>
@@ -125,7 +132,7 @@ function TransferDetails({ amount }) {
       <h4>للدفع عن طريق بريدي موب</h4>
       <CopyRow label="RIB" value={PAYMENT.baridimobRib} />
       <p className="pay-amount">
-        المبلغ: <b>{formatDA(AMOUNTS[amount].value)}</b> <small>({AMOUNTS[amount].title})</small>
+        المبلغ: <b>{formatDA(value)}</b> <small>({title})</small>
       </p>
       <p className="pay-note">لا تنسَ تصوير الوصل وإرساله لنا عبر واتساب على الرقم <span dir="ltr">{WHATSAPP.display}</span> للتحقق وتأكيد مقعدك.</p>
     </div>
@@ -159,11 +166,18 @@ export default function RegisterForm() {
   // Show a field's error once it has been left, or after the first submit attempt
   const visible = (name) => (touched[name] || submitted ? errors[name] : undefined)
 
+  // Fee for this registration: e-Saboura alumni pay ALUMNI.price, others the current public price
+  const isAlumni = values.alumni === 'نعم'
+  const price = priceFor(isAlumni)
+  const amounts = amountsFor(price)
+  const amountValue = amounts[values.amount].value
+
   const onChange = (e) => {
     const { name, value, type, checked } = e.target
     const next = { ...values, [name]: type === 'checkbox' ? checked : value }
-    // Online payment needs a Slick-Pay link for the chosen amount
-    if (name === 'amount' && next.payment === 'online' && !hasLink(value)) next.payment = 'transfer'
+    // Online payment needs a Slick-Pay link for the amount to pay (which depends on the fee and the choice)
+    const nextValue = amountsFor(priceFor(next.alumni === 'نعم'))[next.amount].value
+    if (next.payment === 'online' && !hasLink(nextValue)) next.payment = 'transfer'
     setValues(next)
     // Radio groups and checkboxes count as touched as soon as they're picked
     if (type === 'radio' || type === 'checkbox') setTouched((t) => ({ ...t, [name]: true }))
@@ -197,7 +211,8 @@ export default function RegisterForm() {
       phone: normalizePhone(values.phone),
       organization: values.organization.trim(),
       topic: values.topic.trim(),
-      amount: AMOUNTS[values.amount].label,
+      pastCourse: isAlumni ? values.pastCourse.trim() : '',
+      amount: amounts[values.amount].label,
       payment: PAYMENT_LABEL[values.payment],
     }
     try {
@@ -210,12 +225,12 @@ export default function RegisterForm() {
     }
 
     // Meta Pixel: Purchase once the registration is accepted (only if a pixel ID is set in index.html)
-    trackPurchase(AMOUNTS[values.amount].value, values.profile)
+    trackPurchase(amountValue, values.profile)
 
-    if (values.payment === 'online' && hasLink(values.amount)) {
+    if (values.payment === 'online' && hasLink(amountValue)) {
       setState('redirecting')
       // Give the pixel a moment to send before leaving the page
-      setTimeout(() => window.location.assign(PAYMENT.slickLinks[values.amount]), 600)
+      setTimeout(() => window.location.assign(PAYMENT.slickLinks[amountValue]), 600)
       return
     }
     setState('done')
@@ -230,11 +245,11 @@ export default function RegisterForm() {
   }
 
   const firstName = values.fullName.trim().split(' ')[0]
-  const amountDA = formatDA(AMOUNTS[values.amount].value)
+  const amountDA = formatDA(amountValue)
   const aria = (name) => ({ 'aria-invalid': !!visible(name), 'aria-describedby': visible(name) ? `${name}-err` : undefined })
 
   const methods = [
-    ['online', 'الدفع الإلكتروني', 'بطاقة CIB أو الذهبية، عبر رابط Slick-Pay', hasLink(values.amount)],
+    ['online', 'الدفع الإلكتروني', 'بطاقة CIB أو الذهبية، عبر رابط Slick-Pay', hasLink(amountValue)],
     ['transfer', 'الدفع عبر البريد', 'تحويل إلى حساب CCP أو بريدي موب', true],
   ].filter(([val]) => val !== 'online' || ONLINE_AVAILABLE)
 
@@ -245,13 +260,15 @@ export default function RegisterForm() {
           <span className="kicker">التسجيل</span>
           <h2>احجز مقعدك في الدورة</h2>
           <p>
-            {OFFER_ACTIVE && (
+            {EARLY_ACTIVE ? (
               <>
-                سعر خاص <b>{formatDA(PRICE)}</b> بدل {formatDA(FULL_PRICE)} {OFFER.label} فقط.{' '}
+                للمسجلين {EARLY.label}: <b>{formatDA(EARLY.price)}</b> بدل {formatDA(EARLY.was)}، والسعر الكلي {formatDA(FULL_PRICE)}.{' '}
               </>
+            ) : (
+              <>السعر الكلي {formatDA(FULL_PRICE)}. </>
             )}
-            املأ الاستمارة في دقيقتين، ثم ثبّت مقعدك بدفع التسبيق ({formatDA(DEPOSIT)}) أو كامل الرسوم ({formatDA(PRICE)}). المقاعد محدودة بـ {COURSE.seats} مشاركًا،
-            والأولوية حسب ترتيب التسجيل.
+            شاركت معنا في دورة على منصة السبورة؟ تدفع <b>{formatDA(ALUMNI.price)}</b> وتحصل على {ALUMNI.giftLong}. ثبّت مقعدك بدفع تسبيق 50% أو كامل الرسوم.
+            المقاعد محدودة بـ {COURSE.seats} مشاركًا، والأولوية حسب ترتيب التسجيل.
           </p>
         </Reveal>
 
@@ -263,9 +280,9 @@ export default function RegisterForm() {
             <span>
               {VENUE.name}، {VENUE.city}
             </span>
-            {OFFER_ACTIVE ? (
+            {EARLY_ACTIVE ? (
               <span>
-                <b>{formatDA(PRICE)}</b> {OFFER.label}
+                <b>{formatDA(EARLY.price)}</b> {EARLY.label}
               </span>
             ) : (
               <span>
@@ -295,10 +312,15 @@ export default function RegisterForm() {
                 }
               >
                 <p>بقيت خطوة واحدة لتأكيد مقعدك: ادفع {amountDA} بإحدى الطريقتين، ثم أرسل لنا صورة الوصل.</p>
-                <TransferDetails amount={values.amount} />
+                {isAlumni && (
+                  <p className="gift-note">
+                    بصفتك مشاركًا في منصة السبورة، ستحصل على {ALUMNI.gift} على بريدك <b dir="ltr">{values.email.trim().toLowerCase()}</b>.
+                  </p>
+                )}
+                <TransferDetails value={amountValue} title={amounts[values.amount].title} />
               </Result>
             ) : state === 'redirecting' ? (
-              <Result tone="wait" title="تم تسجيلك، جارٍ تحويلك إلى صفحة الدفع..." actions={<a href={PAYMENT.slickLinks[values.amount]} className="btn btn-orange">افتح صفحة الدفع</a>}>
+              <Result tone="wait" title="تم تسجيلك، جارٍ تحويلك إلى صفحة الدفع..." actions={<a href={PAYMENT.slickLinks[amountValue]} className="btn btn-orange">افتح صفحة الدفع</a>}>
                 <p>ستنتقل الآن إلى صفحة Slick-Pay لإتمام الدفع ببطاقة CIB أو الذهبية. إذا لم تنتقل تلقائيًا، اضغط على الزر.</p>
               </Result>
             ) : (
@@ -314,7 +336,13 @@ export default function RegisterForm() {
                     <Field label="رقم الهاتف (واتساب)" name="phone" error={visible('phone')} required>
                       <input id="phone" name="phone" type="tel" inputMode="tel" dir="ltr" value={values.phone} onChange={onChange} onBlur={onBlur} autoComplete="tel" maxLength={18} placeholder="0661 23 45 67" {...aria('phone')} />
                     </Field>
-                    <Field label="البريد الإلكتروني" name="email" error={visible('email')} required hint="نرسل عليه روابط المنصة القبلية والبعدية">
+                    <Field
+                      label="البريد الإلكتروني"
+                      name="email"
+                      error={visible('email')}
+                      required
+                      hint={isAlumni ? `استعمل بريدك الشخصي: نفعّل عليه ${ALUMNI.gift}` : 'نرسل عليه روابط المنصة القبلية والبعدية'}
+                    >
                       <input id="email" name="email" type="email" dir="ltr" value={values.email} onChange={onChange} onBlur={onBlur} autoComplete="email" maxLength={80} placeholder="name@gmail.com" {...aria('email')} />
                     </Field>
                     <Field label="الولاية" name="wilaya" error={visible('wilaya')} required full>
@@ -355,12 +383,33 @@ export default function RegisterForm() {
 
                 <fieldset>
                   <legend>
-                    <span>3</span> الدفع والتأكيد
+                    <span>3</span> السعر والدفع
                   </legend>
                   <div className="form-grid">
+                    <Field label="هل شاركت معنا من قبل في دورة على منصة السبورة (ولو دورة واحدة)؟" name="alumni" error={visible('alumni')} required full>
+                      <Choices name="alumni" options={YES_NO} value={values.alumni} onChange={onChange} error={visible('alumni')} />
+                    </Field>
+                    {isAlumni && (
+                      <>
+                        <Field label="اسم الدورة التي شاركت فيها" name="pastCourse" error={visible('pastCourse')} required full hint="نتحقق منها لتطبيق سعر مشاركي المنصة">
+                          <input id="pastCourse" name="pastCourse" value={values.pastCourse} onChange={onChange} onBlur={onBlur} maxLength={120} placeholder="مثال: الأستاذ الرقمي" {...aria('pastCourse')} />
+                        </Field>
+                        <div className="gift-box full">
+                          <b>سعرك {formatDA(ALUMNI.price)}</b>
+                          <span>+ {ALUMNI.giftLong}</span>
+                        </div>
+                      </>
+                    )}
+
+                    <div className="price-line full">
+                      <span>السعر المطبّق عليك</span>
+                      <b>{formatDA(price)}</b>
+                      <small>{priceNameFor(isAlumni)}</small>
+                    </div>
+
                     <Field label="المبلغ الذي ستدفعه الآن" name="amount" error={visible('amount')} required full>
                       <div className="pay-options" role="radiogroup" id="amount">
-                        {Object.entries(AMOUNTS).map(([val, a]) => (
+                        {Object.entries(amounts).map(([val, a]) => (
                           <label key={val} className={`pay-option${values.amount === val ? ' on' : ''}`}>
                             <input type="radio" name="amount" value={val} checked={values.amount === val} onChange={onChange} />
                             <span>
@@ -384,7 +433,7 @@ export default function RegisterForm() {
                           </label>
                         ))}
                       </div>
-                      {values.payment === 'transfer' && <TransferDetails amount={values.amount} />}
+                      {values.payment === 'transfer' && <TransferDetails value={amountValue} title={amounts[values.amount].title} />}
                     </Field>
 
                     <Field label="ملاحظات أو أسئلة (اختياري)" name="notes" error={visible('notes')} full hint={`${values.notes.length} / ${NOTES_MAX} حرف`}>
