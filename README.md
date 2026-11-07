@@ -12,9 +12,9 @@ Built with React, Vite and Framer Motion, like the "الأستاذ الرقمي"
 4. Why this course (context)
 5. The 9 target competencies and their measurable outcomes
 6. The approach («عِش، حلّل، طبّق») and the 14 techniques, with the day each is practised
-7. The 6-week path: pre-phase, 4 in-person days, 30-day follow-up
+7. The path: 4 in-person days, then a 30-day follow-up
 8. Detailed programme, with a tab for each day and that day's product
-9. Trainers: lead trainer and the 3 co-trainers
+9. Trainers: the lead trainer and Dr Tebbani side by side with large photos, then the 2 other co-trainers
 10. Assessment and certification (weights, thresholds, impact levels)
 11. Training kit: what you receive and what you produce
 12. Who it's for, prerequisites, room and equipment
@@ -55,19 +55,19 @@ Validation (in `src/lib/validate.js`):
 - Full name: letters only, first name and surname
 - Phone: Algerian mobile (05/06/07). Accepts `0661234567`, `06 61 23 45 67`, `+213…` and `00213…`, and is sent as `0XXXXXXXXX`
 - Email, wilaya, status (الصفة), training experience, device: required
-- Organisation and session topic: optional
+- Organisation: optional
 - Took a course on the e-Saboura platform (yes/no): required; if yes, the course name is required
-- Amount (50% deposit or full fee) and payment method: required
+- Payment method for the deposit: required
 - Consent: required
 - A hidden honeypot field drops bot submissions
 
-Submissions go to FormBold as JSON with Arabic field names, the course name, the alumni answer, the price that applied (`السعر المطبّق`) and the chosen amount and method. The form is `https://formbold.com/s/9xKjX` (`FORMBOLD_FORM_ID` in `src/config.js`). To use another service, set `VITE_FORM_ENDPOINT` in `.env`.
+Submissions go to FormBold as JSON with Arabic field names, the course name, the alumni answer, the price that applied (`السعر المطبّق`), the deposit, the cash remainder and the payment method. The form is `https://formbold.com/s/9xKjX` (`FORMBOLD_FORM_ID` in `src/config.js`). To use another service, set `VITE_FORM_ENDPOINT` in `.env`.
 
 ## Payment
 
 Same methods and accounts as the "الأستاذ الرقمي" page. The registration is always sent to FormBold first.
 
-- **Online (الدفع الإلكتروني):** after registering, the person is sent to a Slick-Pay link (CIB / Edahabia). `PAYMENT.slickLinks` in `src/config.js` has one entry per amount (31,500, 63,000, 45,000 and 90,000 DA). The online option only appears for an amount that has a link; with no links it is hidden.
+- **Online (الدفع الإلكتروني):** after registering, the person is sent to the Slick-Pay link for the 23,000 DA deposit (`PAYMENT.slickLink` in `src/config.js`, CIB / Edahabia). With the link empty, the online option is hidden.
 - **Post office transfer (الدفع عبر البريد):** the CCP and BaridiMob details appear in the form and again on the thank-you screen, each with a copy button. A button opens WhatsApp (`WHATSAPP`) with a ready-made message for sending the receipt.
 
 ## Meta Pixel
@@ -78,13 +78,15 @@ Paste the Pixel ID into `window.META_PIXEL_ID` in `index.html`. With an ID set, 
 
 All prices are in `src/config.js`:
 
-| Who | Price | Deposit (50%) | Until |
-| --- | --- | --- | --- |
-| Everyone who registers before 1 December (`EARLY`) | 63,000 DA, shown "instead of 70,000 DA" | 31,500 DA | end of 30 November |
-| People who took at least one course on the e-Saboura platform (`ALUMNI`) | 63,000 DA + a free one-month Claude account on their personal email | 31,500 DA | the start of the course |
-| Everyone else (`FULL_PRICE`) | 90,000 DA | 45,000 DA | from 1 December |
+| Who | Price | Until |
+| --- | --- | --- |
+| Everyone who registers before 1 December (`EARLY`) | 63,000 DA, shown "instead of 70,000 DA" | end of 30 November |
+| People who took at least one course on the e-Saboura platform (`ALUMNI`) | 63,000 DA + a free one-month Claude account on their personal email | the start of the course |
+| Everyone else (`FULL_PRICE`) | 90,000 DA | from 1 December |
 
-On 1 December the page switches by itself: the early-registration card and banner disappear, the price becomes 90,000 DA, and the hero countdown counts down to the first day instead of the end of early registration. The form works out each person's price from their answer to the e-Saboura question.
+Whatever the price, the seat is confirmed with a fixed **23,000 DA deposit** (`DEPOSIT`), paid online or by transfer; the rest is paid in cash. The form shows each person their price, the deposit and the remainder.
+
+On 1 December the page switches by itself: the early-registration card and banner disappear, the price becomes 90,000 DA, and the hero countdown counts down to the first day instead of the end of early registration.
 
 ## Updating
 

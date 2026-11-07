@@ -30,12 +30,10 @@ export function validate(v) {
   if (!v.profile) e.profile = 'يرجى اختيار الصفة'
   if (!v.experience) e.experience = 'يرجى اختيار سنوات الخبرة'
   if (v.organization.trim().length > 120) e.organization = 'النص طويل جدًا'
-  if (v.topic.trim().length > 200) e.topic = 'النص طويل جدًا'
   if (!v.device) e.device = 'يرجى الإجابة'
   if (!v.alumni) e.alumni = 'يرجى الإجابة'
   else if (v.alumni === 'نعم' && !v.pastCourse.trim()) e.pastCourse = 'اكتب اسم الدورة التي شاركت فيها'
   if (v.pastCourse.trim().length > 120) e.pastCourse = 'النص طويل جدًا'
-  if (!v.amount) e.amount = 'يرجى اختيار قيمة الدفع'
   if (v.notes.length > 500) e.notes = 'الحد الأقصى 500 حرف'
   if (!v.consent) e.consent = 'يجب الموافقة للمتابعة'
   return e

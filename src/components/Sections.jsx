@@ -3,10 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion'
 import almaahedLogo from '../assets/almaahed.png'
 import esabouraMark from '../assets/esaboura-mark.png'
 import esabouraFull from '../assets/esaboura-full.png'
-import { ALUMNI, COURSE, DEPOSIT, EARLY, EARLY_ACTIVE, FULL_PRICE, PHONES, PRICE, SEATS_TAKEN, SHOW_TECH_CARD, SITES, VENUE, WHATSAPP, depositFor, formatDA } from '../config'
+import { ALUMNI, COURSE, DEPOSIT, EARLY, EARLY_ACTIVE, FULL_PRICE, PHONES, PRICE, SEATS_TAKEN, SHOW_TECH_CARD, SITES, VENUE, WHATSAPP, formatDA, remainderFor } from '../config'
 import {
   ASSESSMENT, AUDIENCE, CO_TRAINERS, CONTEXT, CONTEXT_INTRO, DAYS, FAQ, FEES_INCLUDE, GOAL, IMPACT_LEVELS, KIT_PRODUCE, KIT_RECEIVE,
-  LEAD_TRAINER, LOGISTICS, OUTCOMES, POST_PHASE, PRE_PHASE, PREREQS, STATS, TECHNIQUES, TOOLS,
+  LEAD_TRAINER, LOGISTICS, OUTCOMES, POST_PHASE, PREREQS, STATS, TECHNIQUES, TOOLS,
 } from '../data'
 import {
   ArrowIcon, AwardIcon, BookIcon, BrainIcon, BriefcaseIcon, CalendarIcon, ChartIcon, CheckIcon, ClockIcon, GameIcon, LaptopIcon, LayersIcon,
@@ -239,7 +239,7 @@ export function Hero() {
               </span>
             </div>
             <p>
-              يُثبَّت المقعد بتسبيق 50%: <b>{formatDA(DEPOSIT)}</b>
+              يُثبَّت المقعد بتسبيق <b>{formatDA(DEPOSIT)}</b>، والباقي نقدًا
             </p>
             <p className="alumni-line">
               شاركت في منصة السبورة؟ <b>{formatDA(ALUMNI.price)}</b> + {ALUMNI.gift}
@@ -407,7 +407,7 @@ export function Approach() {
         <Reveal className="diff">
           <AwardIcon width={30} height={30} />
           <p>
-            <b>ما يميّز هذه الدورة:</b> مسار تعلّم من 6 أسابيع لا من 4 أيام فقط، ومشروع شخصي يُنجز طوال الدورة، وكل مشارك يُدرّب فعليًا مرتين على الأقل
+            <b>ما يميّز هذه الدورة:</b> مسار تعلّم يمتد 30 يومًا بعد الأيام الحضورية، ومشروع شخصي يُنجز طوال الدورة، وكل مشارك يُدرّب فعليًا مرتين على الأقل
             ويحصل على تسجيل مصوَّر لأدائه.
           </p>
         </Reveal>
@@ -416,27 +416,18 @@ export function Approach() {
   )
 }
 
-/* ---------- Journey (6 weeks) ---------- */
+/* ---------- Journey (in person + 30-day follow-up) ---------- */
 export function Journey() {
   return (
     <section className="sec" id="journey">
       <div className="wrap">
-        <SectionTitle kicker="مسار من 6 أسابيع" title="رحلة تعلّم كاملة، لا 4 أيام فقط" text="مرحلة قبلية عن بُعد تُهيّئك، 4 أيام حضورية مكثفة بسطيف، ثم 30 يومًا من المتابعة لترسيخ التحويل إلى الممارسة." />
-        <div className="journey">
-          <Reveal className="phase phase-remote">
-            <span className="phase-tag">قبل الدورة</span>
-            <h3>{PRE_PHASE.title}</h3>
-            <p className="phase-when">{PRE_PHASE.when}</p>
-            <ul className="ticks">
-              {PRE_PHASE.items.map((x) => (
-                <li key={x}>
-                  <CheckIcon width={18} height={18} />
-                  {x}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-          <Reveal className="phase phase-main" delay={0.08}>
+        <SectionTitle
+          kicker="حضوري + متابعة بعدية"
+          title="رحلة تعلّم كاملة، لا 4 أيام فقط"
+          text="4 أيام حضورية مكثفة بسطيف، ثم 30 يومًا من المتابعة لترسيخ التحويل إلى الممارسة."
+        />
+        <div className="journey n2">
+          <Reveal className="phase phase-main">
             <span className="phase-tag">{COURSE.dates}</span>
             <h3>4 أيام حضورية بسطيف</h3>
             <p className="phase-when">28 ساعة تدريبية · {COURSE.hours}</p>
@@ -452,7 +443,7 @@ export function Journey() {
               البرنامج التفصيلي <ArrowIcon width={18} height={18} />
             </a>
           </Reveal>
-          <Reveal className="phase phase-remote" delay={0.16}>
+          <Reveal className="phase phase-remote" delay={0.08}>
             <span className="phase-tag">بعد الدورة</span>
             <h3>{POST_PHASE.title}</h3>
             <p className="phase-when">{POST_PHASE.when}</p>
@@ -549,6 +540,8 @@ export function Program() {
 /* ---------- Trainers ---------- */
 export function Trainers() {
   const t = LEAD_TRAINER
+  const featured = CO_TRAINERS.filter((c) => c.featured)
+  const others = CO_TRAINERS.filter((c) => !c.featured)
   return (
     <section className="sec" id="trainers">
       <div className="wrap">
@@ -557,40 +550,54 @@ export function Trainers() {
           title="4 مدربين لمتابعة فردية دقيقة"
           text="يؤطّر الدورة فريق من 4 مدربين بقيادة د. أيوب بوخاتم، ما يسمح بمتابعة فردية دقيقة وبتنشيط التدريب المصغّر في قاعات متوازية بتقييم مدرّب مختص في كل قاعة."
         />
-        <Reveal className="lead-card">
-          <div className="lead-photo">
-            <Avatar src={t.photo} initials={t.initials} alt={t.name} className="xl" />
-            <span className="award">
-              <AwardIcon width={20} height={20} />
-              <span>
-                <b>{t.award}</b>
-                <small dir="ltr">{t.awardBy}</small>
-              </span>
-            </span>
-          </div>
-          <div className="lead-info">
-            <span className="kicker">{t.role}</span>
-            <h3>{t.name}</h3>
-            <div className="lead-nums">
-              {t.numbers.map(([n, l]) => (
-                <span key={l}>
-                  <b dir="ltr">{n}</b>
-                  <small>{l}</small>
+        <div className="featured">
+          <Reveal className="ft-card">
+            <div className="ft-photo">
+              <Avatar src={t.photo} initials={t.initials} alt={t.name} className="feature" />
+              <span className="award">
+                <AwardIcon width={20} height={20} />
+                <span>
+                  <b>{t.award}</b>
+                  <small dir="ltr">{t.awardBy}</small>
                 </span>
-              ))}
+              </span>
             </div>
-            <ul className="ticks">
-              {t.bio.map((x) => (
-                <li key={x}>
-                  <CheckIcon width={18} height={18} />
-                  {x}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Reveal>
-        <div className="co-trainers">
-          {CO_TRAINERS.map((c, i) => (
+            <div className="ft-body">
+              <span className="kicker">{t.role}</span>
+              <h3>{t.name}</h3>
+              <div className="lead-nums">
+                {t.numbers.map(([n, l]) => (
+                  <span key={l}>
+                    <b dir="ltr">{n}</b>
+                    <small>{l}</small>
+                  </span>
+                ))}
+              </div>
+              <ul className="ticks">
+                {t.bio.map((x) => (
+                  <li key={x}>
+                    <CheckIcon width={18} height={18} />
+                    {x}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+          {featured.map((c) => (
+            <Reveal key={c.name} className="ft-card" delay={0.08}>
+              <div className="ft-photo">
+                <Avatar src={c.photoLarge || c.photo} initials={c.initials} alt={c.name} className="feature" />
+              </div>
+              <div className="ft-body">
+                <span className="kicker">{c.role}</span>
+                <h3>{c.name}</h3>
+                {c.bio && <p className="ft-bio">{c.bio}</p>}
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <div className={`co-trainers n${others.length}`}>
+          {others.map((c, i) => (
             <Reveal key={c.name} className="co-card" delay={i * 0.07}>
               <Avatar src={c.photo} initials={c.initials} alt={c.name} className="lg" />
               <h4>{c.name}</h4>
@@ -734,7 +741,7 @@ export function Audience() {
         <div className="aud-grid">
           <Reveal className="aud-box">
             <h3>
-              <LaptopIcon width={24} height={24} /> المتطلبات القبلية
+              <LaptopIcon width={24} height={24} /> المتطلبات المسبقة
             </h3>
             <ul className="ticks">
               {PREREQS.map((x) => (
@@ -794,7 +801,7 @@ export function Pricing() {
   return (
     <section className="sec sec-dark" id="pricing">
       <div className="wrap">
-        <SectionTitle light kicker="الشروط التنظيمية والمالية" title="استثمر في مسارك كمدرّب" text="الرسوم تشمل الدورة كاملة: 4 أيام حضورية + المرحلتان القبلية والبعدية." />
+        <SectionTitle light kicker="الشروط التنظيمية والمالية" title="استثمر في مسارك كمدرّب" text={`الرسوم تشمل الدورة كاملة: 4 أيام حضورية + 30 يومًا من المتابعة البعدية. يُثبَّت المقعد بتسبيق ${formatDA(DEPOSIT)}، والباقي يُدفع نقدًا.`} />
         <div className={`tiers n${tiers.length}`}>
           {tiers.map((t, i) => (
             <Reveal key={t.key} className={`tier${t.hot ? ' hot' : ''}`} delay={i * 0.06}>
@@ -807,7 +814,7 @@ export function Pricing() {
               </div>
               {t.gift && <p className="tier-gift">+ {t.gift}</p>}
               <p className="tier-dep">
-                تسبيق 50%: <b>{formatDA(depositFor(t.price))}</b>
+                التسبيق: <b>{formatDA(DEPOSIT)}</b> · الباقي نقدًا: <b>{formatDA(remainderFor(t.price))}</b>
               </p>
               {t.note && <small className="tier-note">{t.note}</small>}
             </Reveal>
@@ -829,7 +836,8 @@ export function Pricing() {
           <div className="ticket-side">
             <div className="deposit">
               <small>يُثبَّت المقعد بتسبيق</small>
-              <b>50% من السعر</b>
+              <b>{formatDA(DEPOSIT)}</b>
+              <small>والباقي يُدفع نقدًا</small>
             </div>
             <div className="seats">
               <div className="seats-top">
