@@ -14,7 +14,7 @@ Built with React, Vite and Framer Motion, like the "الأستاذ الرقمي"
 6. The approach («عِش، حلّل، طبّق») and the 14 techniques, with the day each is practised
 7. The path: 4 in-person days, then a 30-day follow-up
 8. Detailed programme, with a tab for each day and that day's product
-9. Trainers: the lead trainer and Prof. Tebbani in two cards of the same size (large photo, short summary and a «المزيد» button that opens the full profile in a window), then the 2 other co-trainers
+9. Trainers: the four trainers in one grid of identical cards with the same 4:5 photo (four per row on a computer, two on tablet and phone); «المزيد» opens the full profile in a window for those who have one
 10. Assessment and certification (weights, thresholds, impact levels)
 11. Training kit: what you receive and what you produce
 12. Who it's for, prerequisites, room and equipment
@@ -37,7 +37,7 @@ npm run build    # production build in dist/
 
 ## Trainer photos
 
-The photos are in `public/trainers/`. To replace one, keep the same file name (square for co-trainers, 4:5 portrait for the lead trainer):
+The photos are in `public/trainers/`. Each trainer has a 4:5 portrait for the team card (`*-portrait.jpg`, and `ayoub-boukhatem.jpg`) and a square photo for the round avatars. To replace one, keep the same file name and shape:
 
 | Trainer | File |
 | --- | --- |

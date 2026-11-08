@@ -665,11 +665,14 @@ function TrainerDialog({ t, onClose }) {
   )
 }
 
+// A trainer has a full profile to open with «المزيد» when we have more than the card shows
+const hasDetails = (t) => Boolean(t.bio || t.areas || t.skills || t.vision || t.numbers)
+
 export function Trainers() {
-  const people = [{ ...LEAD_TRAINER, key: 'lead' }, ...CO_TRAINERS.filter((c) => c.featured).map((c) => ({ ...c, key: c.name }))]
-  const others = CO_TRAINERS.filter((c) => !c.featured)
+  // The four trainers, same card and same photo size; the lead trainer first
+  const team = [{ ...LEAD_TRAINER, key: 'lead' }, ...CO_TRAINERS.map((c) => ({ ...c, key: c.name }))]
   const [openKey, setOpenKey] = useState(null)
-  const open = people.find((p) => p.key === openKey)
+  const open = team.find((p) => p.key === openKey)
   const close = useRef(() => setOpenKey(null)).current
   return (
     <section className="sec" id="trainers">
@@ -679,43 +682,22 @@ export function Trainers() {
           title="4 مدربين لمتابعة فردية دقيقة"
           text="يؤطّر الدورة فريق من 4 مدربين بقيادة د. أيوب بوخاتم، ما يسمح بمتابعة فردية دقيقة وبتنشيط التدريب المصغّر في قاعات متوازية بتقييم مدرّب مختص في كل قاعة."
         />
-        <div className="featured">
-          {people.map((p, i) => (
-            <Reveal key={p.key} className="ft-card" delay={i * 0.08}>
-              <div className="ft-photo">
-                <Avatar src={p.photoLarge || p.photo} initials={p.initials} alt={p.name} className="feature" />
-                {p.award && (
-                  <span className="award">
-                    <AwardIcon width={20} height={20} />
-                    <span>
-                      <b>{p.award}</b>
-                      <small dir="ltr">{p.awardBy}</small>
-                    </span>
-                  </span>
+        <div className="team">
+          {team.map((p, i) => (
+            <Reveal key={p.key} className="team-card" delay={i * 0.06}>
+              <Avatar src={p.portrait || p.photo} initials={p.initials} alt={p.name} className="portrait" />
+              <div className="team-body">
+                <span className="team-role">{p.role}</span>
+                <h3>{p.name}</h3>
+                {hasDetails(p) && (
+                  <div className="team-actions">
+                    <button type="button" className="btn btn-more" onClick={() => setOpenKey(p.key)} aria-haspopup="dialog">
+                      المزيد
+                      <ArrowIcon width={18} height={18} />
+                    </button>
+                  </div>
                 )}
               </div>
-              <div className="ft-body">
-                <span className="kicker">{p.role}</span>
-                <h3>{p.name}</h3>
-                {p.headline && <p className="ft-headline">{p.headline}</p>}
-                {p.summary && <p className="ft-summary">{p.summary}</p>}
-                <div className="ft-actions">
-                  <button type="button" className="btn btn-more" onClick={() => setOpenKey(p.key)} aria-haspopup="dialog">
-                    المزيد
-                    <ArrowIcon width={18} height={18} />
-                  </button>
-                </div>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-        <div className={`co-trainers n${others.length}`}>
-          {others.map((c, i) => (
-            <Reveal key={c.name} className="co-card" delay={i * 0.07}>
-              <Avatar src={c.photo} initials={c.initials} alt={c.name} className="lg" />
-              <h4>{c.name}</h4>
-              <span className="co-role">{c.role}</span>
-              {c.bio && <p>{c.bio}</p>}
             </Reveal>
           ))}
         </div>

@@ -132,14 +132,15 @@ export const DAYS = [
   },
 ]
 
-// Trainer photos go in public/trainers/ with the file names below.
-// Until a photo is there, the card shows the trainer's initials instead.
+// Trainer photos are in public/trainers/: `portrait` is the 4:5 photo on the team card (the same
+// shape for all four), `photo` the square one used in round avatars. A missing file shows initials.
 export const LEAD_TRAINER = {
   name: 'د. أيوب بوخاتم',
   initials: 'أ ب',
   role: 'المدرب الرئيسي',
   headline: 'مؤسس ومدير Almaahed International',
   photo: 'trainers/ayoub-boukhatem.jpg',
+  portrait: 'trainers/ayoub-boukhatem.jpg',
   award: 'أفضل مدرب في العالم العربي 2013',
   awardBy: 'Global Leaders Development Academy',
   // Short text on the card; the full profile opens with «المزيد»
@@ -188,12 +189,22 @@ export const CO_TRAINERS = [
     vision:
       'الإيمان بأن التدريب الفعّال يتجاوز نقل المعرفة إلى بناء القدرات وتطوير المهارات وتغيير السلوك، من خلال التعلم النشط والتطبيق العملي وتوظيف التكنولوجيا والابتكار لتحقيق أثر ملموس ومستدام.',
     photo: 'trainers/abdelfattah-tebbani.jpg',
-    // Shown large next to the lead trainer
-    featured: true,
-    photoLarge: 'trainers/abdelfattah-tebbani-large.jpg',
+    portrait: 'trainers/abdelfattah-tebbani-portrait.jpg',
   },
-  { name: 'المدرب محمد فراني', initials: 'م ف', role: 'مدرب مشارك', bio: '', photo: 'trainers/mohamed-ferrani.jpg' },
-  { name: 'المدرب عبد القادر وابل', initials: 'ع و', role: 'مدرب مشارك', bio: '', photo: 'trainers/abdelkader-ouabel.jpg' },
+  {
+    name: 'المدرب محمد فراني',
+    initials: 'م ف',
+    role: 'مدرب مشارك',
+    photo: 'trainers/mohamed-ferrani.jpg',
+    portrait: 'trainers/mohamed-ferrani-portrait.jpg',
+  },
+  {
+    name: 'المدرب عبد القادر وابل',
+    initials: 'ع و',
+    role: 'مدرب مشارك',
+    photo: 'trainers/abdelkader-ouabel.jpg',
+    portrait: 'trainers/abdelkader-ouabel-portrait.jpg',
+  },
 ]
 
 // [component, tool, weight]

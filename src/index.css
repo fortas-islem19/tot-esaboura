@@ -815,31 +815,6 @@ ol {
   font-size: 1.9rem;
 }
 
-.avatar.feature {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 4 / 3;
-  border-radius: 0;
-  border: 0;
-  background: linear-gradient(160deg, #1d2a48, var(--ink-900) 60%), var(--ink-900);
-}
-
-.avatar.feature {
-  position: relative;
-}
-
-/* Fill the 4:3 frame whatever the photo's own shape, so both featured photos match */
-.avatar.feature img {
-  position: absolute;
-  inset: 0;
-  object-position: 50% 8%;
-}
-
-.avatar.feature .avatar-initials {
-  font-size: clamp(3.5rem, 9vw, 5.5rem);
-  opacity: 0.9;
-}
-
 /* ---------- Stats + marquee ---------- */
 .stats-sec {
   background: #fff;
@@ -1507,52 +1482,6 @@ ol {
   }
 }
 
-/* ---------- Trainers ---------- */
-.featured {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr; /* same height for both cards, side by side or stacked */
-  gap: 18px;
-  align-items: stretch;
-}
-
-.ft-card {
-  display: flex;
-  flex-direction: column;
-  border-radius: 28px;
-  overflow: hidden;
-  background: linear-gradient(160deg, var(--ink-800), var(--ink-900));
-  color: #fff;
-  box-shadow: 0 40px 80px -50px rgba(15, 21, 36, 0.9);
-}
-
-.ft-photo {
-  position: relative;
-}
-
-.ft-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 22px clamp(20px, 3vw, 28px) 26px;
-}
-
-.ft-summary {
-  margin-top: 12px;
-  color: #dfe6f5;
-  font-size: 1.04rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Keeps the «المزيد» button at the bottom so both cards line up */
-.ft-actions {
-  margin-top: auto;
-  padding-top: 20px;
-}
-
 .btn-more {
   padding: 10px 22px;
   background: transparent;
@@ -1698,13 +1627,102 @@ ol {
   }
 }
 
-.ft-body .kicker {
-  color: #ffb36b;
+/* ---------- Trainers ---------- */
+/* Four equal cards: same width, same height, same 4:5 photo */
+.team {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 18px;
 }
 
-.ft-body h3 {
-  font-size: clamp(1.7rem, 3.4vw, 2.2rem);
+.team-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(170deg, var(--ink-800), var(--ink-900));
+  color: #fff;
+  box-shadow: 0 30px 60px -40px rgba(15, 21, 36, 0.9);
+}
+
+.avatar.portrait {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  border-radius: 0;
+  border: 0;
+  position: relative;
+  background: linear-gradient(160deg, #1d2a48, var(--ink-900) 60%), var(--ink-900);
+}
+
+.avatar.portrait img {
+  position: absolute;
+  inset: 0;
+  object-position: 50% 10%;
+}
+
+.avatar.portrait .avatar-initials {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  opacity: 0.9;
+}
+
+.team-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* centred, so cards with and without «المزيد» look balanced */
+  text-align: center;
+  padding: 18px 16px 20px;
+}
+
+.team-role {
+  color: #ffb36b;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.team-body h3 {
+  margin-top: 4px;
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
   font-weight: 800;
+  line-height: 1.4;
+}
+
+.team-actions {
+  margin-top: 14px;
+}
+
+.team-actions .btn-more {
+  padding: 8px 18px;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 1100px) {
+  .team {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .team {
+    gap: 12px;
+  }
+  .team-body {
+    padding: 12px 12px 14px;
+  }
+  .team-role {
+    font-size: 0.8rem;
+  }
+  .team-body h3 {
+    font-size: 1rem;
+  }
+  .team-actions .btn-more {
+    padding: 7px 12px;
+    font-size: 0.85rem;
+  }
 }
 
 .ft-bio {
@@ -1801,49 +1819,6 @@ ol {
   font-size: 1.02rem;
 }
 
-.ft-body .ticks {
-  color: #dfe6f5;
-  font-size: 1rem;
-}
-
-.ft-body .ticks svg {
-  color: #7fd6ea;
-}
-
-.award {
-  position: absolute;
-  inset-inline: 14px;
-  bottom: 14px;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 14px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
-  color: var(--ink-900);
-  line-height: 1.35;
-}
-
-.award svg {
-  flex: none;
-  color: var(--orange-600);
-}
-
-.award span {
-  display: grid;
-}
-
-.award b {
-  font-size: 0.95rem;
-}
-
-.award small {
-  color: var(--text-2);
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-align: right;
-}
-
 .lead-nums {
   display: flex;
   flex-wrap: wrap;
@@ -1870,66 +1845,6 @@ ol {
 
 .lead-nums small {
   color: #c7d0e3;
-}
-
-.co-trainers {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.co-trainers.n2 {
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.co-card {
-  display: grid;
-  justify-items: center;
-  align-content: start;
-  text-align: center;
-  padding: 26px 20px;
-  border-radius: 22px;
-  background: #fff;
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-
-.co-card h4 {
-  margin-top: 14px;
-  font-size: 1.2rem;
-  color: var(--ink-900);
-}
-
-.co-role {
-  margin-top: 4px;
-  padding: 2px 12px;
-  border-radius: 999px;
-  background: var(--teal-50);
-  color: var(--teal-600);
-  font-size: 0.9rem;
-  font-weight: 700;
-}
-
-.co-card p {
-  margin-top: 10px;
-  color: var(--text-2);
-  font-size: 1rem;
-}
-
-@media (max-width: 860px) {
-  .featured {
-    grid-template-columns: 1fr;
-    max-width: 560px;
-    margin-inline: auto;
-  }
-}
-
-@media (max-width: 720px) {
-  .co-trainers,
-  .co-trainers.n2 {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ---------- Certification ---------- */
