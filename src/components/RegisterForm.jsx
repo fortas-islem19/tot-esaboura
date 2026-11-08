@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { trackPurchase } from '../lib/meta'
 import { submitRegistration } from '../lib/submit'
 import { normalizePhone, validate } from '../lib/validate'
 import { WILAYAS } from '../lib/wilayas'
@@ -44,14 +45,6 @@ const DEVICES = ['حاسوب محمول', 'هاتف ذكي فقط']
 const YES_NO = ['نعم', 'لا']
 const NOTES_MAX = 500
 const PAYMENT_LABEL = { online: 'دفع إلكتروني (رابط Slick-Pay)', transfer: 'تحويل CCP / بريدي موب' }
-
-const trackPurchase = (amount, category) =>
-  window.fbq?.('track', 'Purchase', {
-    value: amount,
-    currency: 'DZD',
-    content_name: 'دورة المدرّب المحترف 4.0 - ToT سطيف',
-    content_category: category,
-  })
 
 function Field({ label, name, error, required, full, hint, children }) {
   return (
@@ -212,8 +205,8 @@ export default function RegisterForm() {
       return
     }
 
-    // Meta Pixel: Purchase once the registration is accepted (only if a pixel ID is set in index.html)
-    trackPurchase(DEPOSIT, values.profile)
+    // Meta Pixel + Conversions API: Purchase (the deposit) once the registration is accepted
+    trackPurchase({ value: DEPOSIT, category: values.profile, user: { email: clean.email, phone: clean.phone, fullName: clean.fullName } })
 
     if (values.payment === 'online' && ONLINE_AVAILABLE) {
       setState('redirecting')
@@ -458,7 +451,7 @@ export default function RegisterForm() {
                     'أرسل طلب التسجيل'
                   )}
                 </button>
-                <p className="secure">بياناتك تُستعمل فقط للتواصل معك بخصوص هذه الدورة.</p>
+                <p className="secure">نستعمل بياناتك للتواصل معك بخصوص هذه الدورة، ونرسل بريدك ورقمك ببصمة مشفّرة (SHA-256) إلى Meta لقياس أداء إعلاناتنا.</p>
               </motion.form>
             )}
           </AnimatePresence>

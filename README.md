@@ -70,9 +70,16 @@ Same methods and accounts as the "الأستاذ الرقمي" page. The registr
 - **Online (الدفع الإلكتروني):** after registering, the person is sent to the Slick-Pay link for the 23,000 DA deposit (`PAYMENT.slickLink` in `src/config.js`, CIB / Edahabia). With the link empty, the online option is hidden.
 - **Post office transfer (الدفع عبر البريد):** the CCP and BaridiMob details appear in the form and again on the thank-you screen, each with a copy button. A button opens WhatsApp (`WHATSAPP`) with a ready-made message for sending the receipt.
 
-## Meta Pixel
+## Meta Pixel and Conversions API
 
-Paste the Pixel ID into `window.META_PIXEL_ID` in `index.html`. With an ID set, the page tracks `PageView`, and `Purchase` (the chosen amount in DZD, with the status as `content_category`) once FormBold accepts a registration. With no ID, nothing is loaded.
+The page uses the Meta Pixel **1119345057627502** ("Esaboura TOT"), set in `index.html` (`window.META_PIXEL_ID`, plus the `<noscript>` image). Each event is sent twice with the same event ID, once by the browser pixel and once from the server through the Conversions API, so Meta counts it once but still receives it when a browser blocks the pixel:
+
+- `PageView` on every visit
+- `Purchase` when FormBold accepts a registration, with the deposit (23,000 DZD) as the value and the status (الصفة) as `content_category`
+
+The server side is the Vercel function `api/meta-event.js`. It only accepts these two events, only from the site's own pages, and sends Meta the visitor's IP, browser, `_fbp`/`_fbc` cookies and, for `Purchase`, the email, phone and name hashed with SHA-256 (never in plain text). The form tells people this under the submit button.
+
+The access token is **not** in the code: it is the Vercel environment variable `META_CAPI_TOKEN` (type "sensitive", Production and Preview). Optional variables: `META_TEST_EVENT_CODE` (to see server events under Events Manager → Test events), `META_GRAPH_VERSION` (default `v23.0`) and `META_PIXEL_ID`. After changing a variable, redeploy. `GET /api/meta-event` answers `{"ok":true,"configured":true}` when the token is set.
 
 ## Prices
 
